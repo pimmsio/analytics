@@ -72,8 +72,7 @@ export const pricingPlans = [
     ],
     cta: 'Try Free for 14 Days',
     popular: true,
-    stripeLink:
-      'https://buy.stripe.com/test_dR66oD6MX2AydJ65kk?pimms_client_reference_id=1',
+    stripeLink: 'https://buy.stripe.com/test_dR66oD6MX2AydJ65kk',
   },
   {
     name: 'Enterprise',

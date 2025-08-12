@@ -72,7 +72,7 @@ const Pricing: React.FC = () => {
                   ) : (
                     <Button
                       variant={plan.popular ? 'primary' : 'outline'}
-                      href={plan.stripeLink || '#'}
+                      href={plan.stripeLink || '/fake-page'}
                       fullWidth
                     >
                       {plan.cta}

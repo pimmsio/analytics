@@ -19,7 +19,11 @@
       script.src = isDev
         ? '/@fs/Users/sarfati/workspace/analytics/packages/script/dist/analytics/script.detection.js'
         : 'https://cdn.pimms.io/analytics/script.detection.js';
-      script.setAttribute('data-domains', '{"outbound":"pimms.io"}');
+      script.setAttribute(
+        'data-domains',
+        '{"outbound":"app.pimms.io,pimms.io"}',
+      );
+      script.setAttribute('data-forward-all', 'true');
 
       document.head.appendChild(script);
 

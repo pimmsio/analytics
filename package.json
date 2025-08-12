@@ -6,13 +6,13 @@
   },
   "prettier": "@vercel/style-guide/prettier",
   "dependencies": {
-    "lint-staged": "^13.2.2"
+    "lint-staged": "^16.1.5"
   },
   "devDependencies": {
-    "@vercel/style-guide": "^5.0.1",
-    "husky": "^8.0.3",
-    "prettier": "3.2.4",
-    "typescript": "^5.1.6"
+    "@vercel/style-guide": "^6.0.0",
+    "husky": "^9.1.7",
+    "prettier": "3.6.2",
+    "typescript": "^5.9.2"
   },
   "packageManager": "pnpm@8.6.5"
 }

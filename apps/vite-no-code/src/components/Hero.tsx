@@ -44,7 +44,7 @@ const Hero: React.FC = () => {
           >
             <Button
               size="lg"
-              href="https://buy.stripe.com/test_dR66oD6MX2AydJ65kk?pimms_client_reference_id=1"
+              href="https://buy.stripe.com/test_dR66oD6MX2AydJ65kk"
               className="group"
             >
               Get Pro Plan Now
@@ -56,7 +56,7 @@ const Hero: React.FC = () => {
             <Button
               size="lg"
               variant="outline"
-              href="https://app.iclosed.io/e/alexandresarfati/30-minutes-call?utm_term=1"
+              href="https://app.iclosed.io/e/alexandresarfati/30-minutes-call"
             >
               Book a call (iClosed)
             </Button>

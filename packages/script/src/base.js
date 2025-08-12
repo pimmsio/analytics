@@ -7,7 +7,8 @@
   const HOSTNAME = window.location.hostname;
 
   // Common script attributes
-  const API_HOST = script.getAttribute('data-api-host') || 'https://api.pimms.io';
+  const API_HOST =
+    script.getAttribute('data-api-host') || 'https://api.pimms.io';
   const COOKIE_OPTIONS = (() => {
     const defaultOptions = {
       domain:
@@ -50,6 +51,9 @@
   })();
 
   const SHORT_DOMAIN = DOMAINS_CONFIG.refer;
+
+  const FORWARD_ALL = script.getAttribute('data-forward-all') === 'true';
+
   const ATTRIBUTION_MODEL =
     script.getAttribute('data-attribution-model') || 'last-click';
   const QUERY_PARAM = script.getAttribute('data-query-param') || 'via';
@@ -137,6 +141,7 @@
     p: QUERY_PARAM, // was QUERY_PARAM
     v: QUERY_PARAM_VALUE, // was QUERY_PARAM_VALUE
     n: DOMAINS_CONFIG, // was DOMAINS_CONFIG
+    f: FORWARD_ALL, // was FORWARD_ALL
   };
 
   // Initialize

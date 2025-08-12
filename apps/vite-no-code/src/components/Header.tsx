@@ -44,10 +44,10 @@ const Header: React.FC = () => {
           </nav>
 
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="outline" href="https://app.pimms.io?pimms_id=1">
+            <Button variant="outline" href="https://app.pimms.io">
               Log in
             </Button>
-            <Button href="https://buy.stripe.com/test_dR66oD6MX2AydJ65kk?pimms_client_reference_id=1">
+            <Button href="https://buy.stripe.com/test_dR66oD6MX2AydJ65kk">
               Sign up free
             </Button>
           </div>
