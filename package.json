@@ -2,6 +2,7 @@
   "name": "analytics",
   "license": "MPL-2.0",
   "scripts": {
+    "dev": "pnpm --filter @getpimms/analytics-script dev & pnpm --filter nextjs dev",
     "prepare": "husky install"
   },
   "prettier": "@vercel/style-guide/prettier",

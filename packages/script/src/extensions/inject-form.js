@@ -20,14 +20,20 @@
   function injectFieldIntoForms(id) {
     const forms = document.querySelectorAll('form');
     forms.forEach((form) => {
-      if (!form.querySelector(`input[name="${FIELD_NAME}"]`)) {
-        const hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.name = FIELD_NAME;
-        hiddenInput.value = id;
-        form.appendChild(hiddenInput);
-        console.log(`[PIMMS] Injected ${FIELD_NAME} into form:`, form);
+      const existing = form.querySelector(`input[name="${FIELD_NAME}"]`);
+      if (existing) {
+        if (existing.value !== id) {
+          existing.value = id;
+          console.log(`[PIMMS] Updated ${FIELD_NAME} in form:`, form);
+        }
+        return;
       }
+      const hiddenInput = document.createElement('input');
+      hiddenInput.type = 'hidden';
+      hiddenInput.name = FIELD_NAME;
+      hiddenInput.value = id;
+      form.appendChild(hiddenInput);
+      console.log(`[PIMMS] Injected ${FIELD_NAME} into form:`, form);
     });
   }
 

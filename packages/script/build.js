@@ -2,6 +2,8 @@ const esbuild = require('esbuild');
 const fs = require('fs');
 const path = require('path');
 
+const watchMode = process.argv.includes('--watch');
+
 const baseConfig = {
   bundle: true,
   minify: true,
@@ -24,94 +26,107 @@ fs.copyFileSync(
   path.join(__dirname, 'dist/_redirects'),
 );
 
-// Build all variants
-Promise.all([
-  // Base script
-  esbuild.build({
-    ...baseConfig,
+const builds = [
+  {
+    label: 'script.js',
     stdin: {
-      contents: fs.readFileSync('src/base.js', 'utf8'),
-      resolveDir: __dirname,
+      contents: () => fs.readFileSync('src/base.js', 'utf8'),
       sourcefile: 'base.js',
     },
     outfile: 'dist/analytics/script.js',
-  }),
-
-  // Site visit tracking
-  esbuild.build({
-    ...baseConfig,
+  },
+  {
+    label: 'script.site-visit.js',
     stdin: {
-      contents: combineFiles(['src/base.js', 'src/extensions/site-visit.js']),
-      resolveDir: __dirname,
+      contents: () =>
+        combineFiles(['src/base.js', 'src/extensions/site-visit.js']),
       sourcefile: 'combined.js',
     },
     outfile: 'dist/analytics/script.site-visit.js',
-  }),
-
-  // Outbound domains tracking
-  esbuild.build({
-    ...baseConfig,
+  },
+  {
+    label: 'script.outbound-domains.js',
     stdin: {
-      contents: combineFiles([
-        'src/base.js',
-        'src/extensions/outbound-domains.js',
-      ]),
-      resolveDir: __dirname,
+      contents: () =>
+        combineFiles(['src/base.js', 'src/extensions/outbound-domains.js']),
       sourcefile: 'combined.js',
     },
     outfile: 'dist/analytics/script.outbound-domains.js',
-  }),
-
-  // Complete script with concatenated feature names
-  esbuild.build({
-    ...baseConfig,
+  },
+  {
+    label: 'script.site-visit.outbound-domains.js',
     stdin: {
-      contents: combineFiles([
-        'src/base.js',
-        'src/extensions/site-visit.js',
-        'src/extensions/outbound-domains.js',
-      ]),
-      resolveDir: __dirname,
+      contents: () =>
+        combineFiles([
+          'src/base.js',
+          'src/extensions/site-visit.js',
+          'src/extensions/outbound-domains.js',
+        ]),
       sourcefile: 'combined.js',
     },
     outfile: 'dist/analytics/script.site-visit.outbound-domains.js',
-  }),
-
-  // Detect IDs + support embed
-  esbuild.build({
-    ...baseConfig,
+  },
+  {
+    label: 'script.detection.js',
     stdin: {
-      contents: combineFiles([
-        'src/base.js',
-        'src/extensions/outbound-domains.js',
-        'src/extensions/detect-ids.js',
-        'src/extensions/support-embed.js',
-      ]),
-      resolveDir: __dirname,
+      contents: () =>
+        combineFiles([
+          'src/base.js',
+          'src/extensions/outbound-domains.js',
+          'src/extensions/detect-ids.js',
+          'src/extensions/support-embed.js',
+          'src/extensions/thank-you-page.js',
+        ]),
       sourcefile: 'combined.js',
     },
     outfile: 'dist/analytics/script.detection.js',
-  }),
-
-  // Expose ids: independent of the script
-  esbuild.build({
-    ...baseConfig,
+  },
+  {
+    label: 'script.expose.js',
     stdin: {
-      contents: fs.readFileSync('src/extensions/expose-ids.js', 'utf8'),
-      resolveDir: __dirname,
+      contents: () => fs.readFileSync('src/extensions/expose-ids.js', 'utf8'),
       sourcefile: 'base.js',
     },
     outfile: 'dist/analytics/script.expose.js',
-  }),
-
-  // Inject form: independent of the script
-  esbuild.build({
-    ...baseConfig,
+  },
+  {
+    label: 'script.inject-form.js',
     stdin: {
-      contents: fs.readFileSync('src/extensions/inject-form.js', 'utf8'),
-      resolveDir: __dirname,
+      contents: () => fs.readFileSync('src/extensions/inject-form.js', 'utf8'),
       sourcefile: 'base.js',
     },
     outfile: 'dist/analytics/script.inject-form.js',
-  }),
-]).catch(() => process.exit(1));
+  },
+];
+
+function runBuild() {
+  return Promise.all(
+    builds.map(({ stdin, outfile }) =>
+      esbuild.build({
+        ...baseConfig,
+        stdin: {
+          contents: stdin.contents(),
+          resolveDir: __dirname,
+          sourcefile: stdin.sourcefile,
+        },
+        outfile,
+      }),
+    ),
+  );
+}
+
+if (watchMode) {
+  runBuild().then(() => {
+    console.log('[watch] Initial build complete');
+    fs.watch('src', { recursive: true }, (event, filename) => {
+      if (!filename || !filename.endsWith('.js')) return;
+      console.log(`[watch] ${filename} changed, rebuilding...`);
+      runBuild()
+        .then(() => console.log('[watch] Rebuild complete'))
+        .catch((err) => console.error('[watch] Build error:', err.message));
+    });
+    console.log('[watch] Watching src/ for changes...');
+  });
+} else {
+  runBuild().catch(() => process.exit(1));
+}

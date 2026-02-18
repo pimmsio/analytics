@@ -1,6 +1,5 @@
-// Wait for base script to initialize
 const initDetectIds = () => {
-  const { f: FORWARD_ALL } = window._pimmsAnalytics;
+  const { c: cookieManager, f: FORWARD_ALL } = window._pimmsAnalytics;
 
   const COOKIE_PRIORITY = ['pimms_id', 'dclid'];
   const TARGET_PATTERNS = [
@@ -18,7 +17,6 @@ const initDetectIds = () => {
     },
   ];
 
-  // Official integrations with their parameter patterns
   const OFFICIAL_INTEGRATIONS = [
     {
       pattern: /\.cal\.com$/,
@@ -38,23 +36,14 @@ const initDetectIds = () => {
   ];
 
   let debounceTimer = null;
+  const processedLinks = new Set();
 
-  function getCookieValue(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    return parts.length === 2 ? parts.pop().split(';').shift() : null;
-  }
-
-  function getHighestPriorityCookie(names) {
-    for (const name of names) {
-      const value = getCookieValue(name);
+  function getHighestPriorityCookie() {
+    for (const name of COOKIE_PRIORITY) {
+      const value = cookieManager.get(name);
       if (value) return { name, value };
     }
     return null;
-  }
-
-  function matchesDomain(hostname, pattern) {
-    return pattern.test(hostname);
   }
 
   function getCurrentDomain() {
@@ -66,26 +55,26 @@ const initDetectIds = () => {
     const links = document.querySelectorAll('a[href]');
 
     links.forEach((link) => {
+      if (processedLinks.has(link)) return;
+
       let updated = false;
       let href = link.href;
 
       try {
         const url = new URL(link.href);
 
-        // FIRST: Official integrations tracking - add placeholder values
         for (const integration of OFFICIAL_INTEGRATIONS) {
-          if (matchesDomain(url.hostname, integration.pattern)) {
+          if (integration.pattern.test(url.hostname)) {
             if (!url.searchParams.has(integration.param)) {
               url.searchParams.set(integration.param, integration.value);
               link.href = url.toString();
-              href = link.href; // Update href for TARGET_PATTERNS
+              href = link.href;
               updated = true;
-              break; // Only apply one integration per link
+              break;
             }
           }
         }
 
-        // SECOND: ForwardAll functionality - add pimms_id=1 to current domain links
         if (
           FORWARD_ALL &&
           url.hostname.replace(/^www\./, '') === currentDomain &&
@@ -93,14 +82,11 @@ const initDetectIds = () => {
         ) {
           url.searchParams.set('pimms_id', '1');
           link.href = url.toString();
-          href = link.href; // Update href for TARGET_PATTERNS
+          href = link.href;
           updated = true;
         }
-      } catch (e) {
-        // Ignore invalid URLs
-      }
+      } catch (e) {}
 
-      // THIRD: TARGET_PATTERNS functionality - replace =1 with actual ID
       TARGET_PATTERNS.forEach(({ match, replace }) => {
         if (href.includes(match)) {
           const newHref = href.replace(match, replace(id));
@@ -113,6 +99,7 @@ const initDetectIds = () => {
       });
 
       if (updated) {
+        processedLinks.add(link);
         console.log(`[PIMMS] Updated link: ${link.href}`);
       }
     });
@@ -124,10 +111,8 @@ const initDetectIds = () => {
   }
 
   function init() {
-    const cookie = getHighestPriorityCookie(COOKIE_PRIORITY);
-    if (!cookie) {
-      return;
-    }
+    const cookie = getHighestPriorityCookie();
+    if (!cookie) return;
 
     console.log(`[PIMMS] [links] Using ${cookie.name}:`, cookie.value);
     updateLinks(cookie.value);
@@ -143,7 +128,6 @@ const initDetectIds = () => {
   }
 };
 
-// Run when base script is ready
 if (window._pimmsAnalytics) {
   initDetectIds();
 } else {

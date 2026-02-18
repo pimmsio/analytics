@@ -1,16 +1,20 @@
 {
   "name": "@getpimms/analytics-script",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "main": "src/index.js",
   "files": [
     "dist/analytics/script.js",
     "dist/analytics/script.site-visit.js",
     "dist/analytics/script.outbound-domains.js",
-    "dist/analytics/script.site-visit.outbound-domains.js"
+    "dist/analytics/script.site-visit.outbound-domains.js",
+    "dist/analytics/script.detection.js",
+    "dist/analytics/script.expose.js",
+    "dist/analytics/script.inject-form.js"
   ],
   "scripts": {
     "prebuild": "mkdir -p dist/analytics",
-    "build": "node build.js"
+    "build": "node build.js",
+    "dev": "node build.js --watch"
   },
   "devDependencies": {
     "esbuild": "^0.25.8",

@@ -1,4 +1,3 @@
-// Wait for base script to initialize
 const initOutboundDomains = () => {
   const {
     c: cookieManager,
@@ -6,30 +5,29 @@ const initOutboundDomains = () => {
     h: HOSTNAME,
     n: DOMAINS_CONFIG,
   } = window._pimmsAnalytics;
-  let outboundLinksUpdated = new Set(); // Track processed links
+
+  const currentDomain = HOSTNAME.replace(/^www\./, '');
+  const outboundDomains = (DOMAINS_CONFIG.outbound || '')
+    .split(',')
+    .map((d) => d.trim())
+    .filter((d) => d && d !== currentDomain);
+
+  if (!outboundDomains.length) return;
+
+  const selector = outboundDomains
+    .map((domain) => `a[href*="${domain}"]`)
+    .join(',');
+
+  const outboundLinksUpdated = new Set();
 
   function addOutboundTracking(clickId) {
-    // Parse comma-separated outbound domains
-    const outboundDomains = DOMAINS_CONFIG.outbound
-      ?.split(',')
-      .map((d) => d.trim());
-    if (!outboundDomains?.length) return;
-
-    const currentDomain = HOSTNAME.replace(/^www\./, '');
-    const filteredDomains = outboundDomains.filter((d) => d !== currentDomain);
-
     const existingCookie = clickId || cookieManager.get(PIMMS_ID_VAR);
     if (!existingCookie) return;
 
-    const selector = filteredDomains
-      .map((domain) => `a[href*="${domain}"]`)
-      .join(',');
-
     const links = document.querySelectorAll(selector);
-    if (!links || links.length === 0) return;
+    if (!links.length) return;
 
     links.forEach((link) => {
-      // Skip already processed links
       if (outboundLinksUpdated.has(link)) return;
 
       try {
@@ -41,17 +39,14 @@ const initOutboundDomains = () => {
     });
   }
 
-  // Run on DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => addOutboundTracking());
   } else {
     addOutboundTracking();
   }
 
-  // Run periodically to catch dynamically added links
   setInterval(addOutboundTracking, 2000);
 
-  // Add SPA support
   window.addEventListener('popstate', () => addOutboundTracking());
 
   const originalPushState = history.pushState;
@@ -68,7 +63,6 @@ const initOutboundDomains = () => {
   };
 };
 
-// Run when base script is ready
 if (window._pimmsAnalytics) {
   initOutboundDomains();
 } else {
